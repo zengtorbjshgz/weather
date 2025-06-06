@@ -1,85 +1,113 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { RouterView, useRouter } from 'vue-router'
+import SideNavigation from './components/SideNavigation.vue'
+
+const router = useRouter()
+
+interface MenuItem {
+  id: string
+  label: string
+  icon: any
+  active?: boolean
+  route?: string
+}
+
+// 处理导航点击
+const handleNavigation = (item: MenuItem) => {
+  console.log('Navigation clicked:', item)
+  
+  if (item.route) {
+    router.push(item.route)
+  } else if (item.id === 'logout') {
+    // 处理登出逻辑
+    console.log('Logout clicked')
+  }
+}
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
+  <div id="app">
+    <div class="app-layout">
+      <!-- 侧边导航 -->
+      <SideNavigation @item-click="handleNavigation" />
+      
+      <!-- 主内容区域 -->
+      <main class="main-content">
+        <header class="app-header">
+          <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="60" height="60" />
+          <h1>Weather Dashboard</h1>
+        </header>
+        
+        <div class="content-wrapper">
+          <RouterView />
+        </div>
+      </main>
     </div>
-  </header>
-
-  <RouterView />
+  </div>
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+#app {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-layout {
+  display: flex;
+  height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+  overflow: hidden;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
 .logo {
-  display: block;
-  margin: 0 auto 2rem;
+  margin-right: 1rem;
 }
 
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+.app-header h1 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
+.content-wrapper {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
 }
 
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
   }
-
-  .logo {
-    margin: 0 2rem 0 0;
+  
+  .app-header {
+    padding: 1rem;
   }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
+  
+  .app-header h1 {
+    font-size: 1.25rem;
   }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
+  
+  .content-wrapper {
+    padding: 1rem;
   }
 }
 </style>
