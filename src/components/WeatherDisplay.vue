@@ -45,14 +45,6 @@
             <span class="label">风力</span>
             <span class="value">{{ weatherData.now.wind_class }}</span>
           </div>
-          <div class="detail-item">
-            <span class="label">能见度</span>
-            <span class="value">{{ (weatherData.now.vis / 1000).toFixed(1) }}km</span>
-          </div>
-          <div class="detail-item">
-            <span class="label">AQI</span>
-            <span class="value" :class="getAQIClass(weatherData.now.aqi)">{{ weatherData.now.aqi }}</span>
-          </div>
         </div>
       </div>
 
@@ -61,7 +53,7 @@
         <h3>未来天气</h3>
         <div class="forecast-list">
           <div 
-            v-for="forecast in weatherData.forecasts.slice(0, 5)" 
+            v-for="forecast in weatherData.forecasts.slice(0, 3)" 
             :key="forecast.date"
             class="forecast-item"
           >
@@ -76,41 +68,6 @@
                 <span class="low">{{ forecast.low }}°</span>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 生活指数 -->
-      <div class="indexes-section">
-        <h3>生活指数</h3>
-        <div class="indexes-grid">
-          <div 
-            v-for="index in weatherData.indexes" 
-            :key="index.name"
-            class="index-item"
-          >
-            <div class="index-name">{{ index.name }}</div>
-            <div class="index-brief">{{ index.brief }}</div>
-            <div class="index-detail">{{ index.detail }}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 天气预警 -->
-      <div v-if="weatherData.alerts && weatherData.alerts.length > 0" class="alerts-section">
-        <h3>天气预警</h3>
-        <div class="alerts-list">
-          <div 
-            v-for="alert in weatherData.alerts" 
-            :key="alert.title"
-            class="alert-item"
-          >
-            <div class="alert-header">
-              <span class="alert-type">{{ alert.type }}</span>
-              <span class="alert-level">{{ alert.level }}</span>
-            </div>
-            <div class="alert-title">{{ alert.title }}</div>
-            <div class="alert-desc">{{ alert.desc }}</div>
           </div>
         </div>
       </div>
@@ -136,30 +93,8 @@ interface CurrentWeather {
   wind_class: string
   wind_dir: string
   text: string
-  prec_1h: number
-  clouds: number
   vis: number
   aqi: number
-  pm25: number
-  pm10: number
-  no2: number
-  so2: number
-  o3: number
-  co: number
-  uptime: string
-}
-
-interface WeatherIndex {
-  name: string
-  brief: string
-  detail: string
-}
-
-interface WeatherAlert {
-  type: string
-  level: string
-  title: string
-  desc: string
 }
 
 interface WeatherForecast {
@@ -167,84 +102,24 @@ interface WeatherForecast {
   week: string
   high: number
   low: number
-  wc_day: string
-  wc_night: string
-  wd_day: string
-  wd_night: string
   text_day: string
   text_night: string
-  aqi: number
 }
 
 interface WeatherData {
   location: Location
   now: CurrentWeather
-  indexes: WeatherIndex[]
-  alerts: WeatherAlert[]
   forecasts: WeatherForecast[]
-}
-
-interface WeatherResponse {
-  status: number
-  result: WeatherData
 }
 
 const loading = ref(true)
 const error = ref('')
 const weatherData = ref<WeatherData | null>(null)
 
-// 百度地图API密钥 - 实际使用时需要替换为真实的AK
-const BAIDU_AK = 'your_baidu_ak_here'
-
-// 默认位置（北京）
-const DEFAULT_LOCATION = {
-  lat: 39.9093,
-  lng: 116.3964
-}
-
-// 获取用户地理位置
-const getUserLocation = (): Promise<{ lat: number; lng: number }> => {
-  return new Promise((resolve) => {
-    if (!navigator.geolocation) {
-      console.log('浏览器不支持地理位置获取，使用默认位置')
-      resolve(DEFAULT_LOCATION)
-      return
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        resolve({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        })
-      },
-      (error) => {
-        console.log('获取地理位置失败，使用默认位置:', error.message)
-        resolve(DEFAULT_LOCATION)
-      },
-      {
-        timeout: 10000,
-        enableHighAccuracy: true,
-        maximumAge: 300000 // 5分钟缓存
-      }
-    )
-  })
-}
-
-// 根据经纬度获取区县ID（简化版本，实际应该调用百度地图逆地理编码API）
-const getDistrictId = async (lat: number, lng: number): Promise<string> => {
-  // 这里简化处理，直接返回北京东城区的ID
-  // 实际项目中应该调用百度地图的逆地理编码API来获取准确的district_id
-  return '110101' // 北京市东城区
-}
-
 // 获取天气数据
-const fetchWeatherData = async (districtId: string): Promise<WeatherData> => {
-  // 由于CORS限制，这里使用模拟数据
-  // 实际项目中需要通过后端代理或使用JSONP方式调用
-  
+const fetchWeatherData = async (): Promise<WeatherData> => {
   // 模拟API调用延迟
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  await new Promise(resolve => setTimeout(resolve, 1500))
   
   // 返回模拟数据
   return {
@@ -262,123 +137,33 @@ const fetchWeatherData = async (districtId: string): Promise<WeatherData> => {
       wind_class: "2级",
       wind_dir: "东风",
       text: "多云",
-      prec_1h: 0,
-      clouds: 999999,
       vis: 3471,
-      aqi: 140,
-      pm25: 107,
-      pm10: 0,
-      no2: 23,
-      so2: 22,
-      o3: 70,
-      co: 1.7,
-      uptime: "20200220143500"
+      aqi: 140
     },
-    indexes: [
-      {
-        name: "晨练指数",
-        brief: "较适宜",
-        detail: "天气阴沉，请避免在林中晨练。"
-      },
-      {
-        name: "洗车指数",
-        brief: "适宜",
-        detail: "天气较好，适合擦洗汽车。"
-      },
-      {
-        name: "感冒指数",
-        brief: "易发",
-        detail: "天凉，昼夜温差大，易感冒"
-      },
-      {
-        name: "紫外线指数",
-        brief: "最弱",
-        detail: "辐射弱，涂擦SPF8-12防晒护肤品。"
-      },
-      {
-        name: "穿衣指数",
-        brief: "较冷",
-        detail: "建议着厚外套加毛衣等服装。"
-      },
-      {
-        name: "运动指数",
-        brief: "较适宜",
-        detail: "气温较低，在户外运动请注意增减衣物。"
-      }
-    ],
-    alerts: [
-      {
-        type: "道路冰雪",
-        level: "蓝色预警",
-        title: "市气象局发布道路冰雪蓝色预警[IV级/一般]",
-        desc: "市气象局发布道路冰雪蓝色预警信号:受降雪天气影响，预计未来 24 小时我市将出现对交通有影响的道路结冰或积雪，请有关部门及广大群众做好防范工作。"
-      }
-    ],
     forecasts: [
       {
-        date: "2020-02-20",
-        week: "星期四",
+        date: "2024-01-20",
+        week: "星期六",
         high: 7,
         low: -2,
-        wc_day: "<3级",
-        wc_night: "<3级",
-        wd_day: "东南风",
-        wd_night: "北风",
         text_day: "多云",
-        text_night: "阴",
-        aqi: 93
+        text_night: "阴"
       },
       {
-        date: "2020-02-21",
-        week: "星期五",
-        high: 11,
-        low: 1,
-        wc_day: "4~5级",
-        wc_night: "<3级",
-        wd_day: "西北风",
-        wd_night: "西北风",
-        text_day: "多云",
-        text_night: "晴",
-        aqi: 44
-      },
-      {
-        date: "2020-02-22",
-        week: "星期六",
-        high: 10,
-        low: -2,
-        wc_day: "<3级",
-        wc_night: "<3级",
-        wd_day: "西风",
-        wd_night: "南风",
-        text_day: "晴",
-        text_night: "晴",
-        aqi: 39
-      },
-      {
-        date: "2020-02-23",
+        date: "2024-01-21",
         week: "星期日",
         high: 11,
-        low: 0,
-        wc_day: "<3级",
-        wc_night: "<3级",
-        wd_day: "西南风",
-        wd_night: "西南风",
-        text_day: "晴",
-        text_night: "晴",
-        aqi: 42
+        low: 1,
+        text_day: "多云",
+        text_night: "晴"
       },
       {
-        date: "2020-02-24",
+        date: "2024-01-22",
         week: "星期一",
-        high: 13,
-        low: 2,
-        wc_day: "<3级",
-        wc_night: "<3级",
-        wd_day: "西南风",
-        wd_night: "西南风",
+        high: 10,
+        low: -2,
         text_day: "晴",
-        text_night: "晴",
-        aqi: 45
+        text_night: "晴"
       }
     ]
   }
@@ -390,14 +175,12 @@ const fetchWeather = async () => {
     loading.value = true
     error.value = ''
     
-    // 获取用户位置
-    const location = await getUserLocation()
-    
-    // 获取区县ID
-    const districtId = await getDistrictId(location.lat, location.lng)
+    console.log('开始获取天气数据...')
     
     // 获取天气数据
-    const data = await fetchWeatherData(districtId)
+    const data = await fetchWeatherData()
+    
+    console.log('天气数据获取成功:', data)
     
     weatherData.value = data
   } catch (err) {
@@ -408,16 +191,6 @@ const fetchWeather = async () => {
   }
 }
 
-// AQI等级样式
-const getAQIClass = (aqi: number): string => {
-  if (aqi <= 50) return 'aqi-good'
-  if (aqi <= 100) return 'aqi-moderate'
-  if (aqi <= 150) return 'aqi-unhealthy-sensitive'
-  if (aqi <= 200) return 'aqi-unhealthy'
-  if (aqi <= 300) return 'aqi-very-unhealthy'
-  return 'aqi-hazardous'
-}
-
 // 格式化日期
 const formatDate = (dateStr: string): string => {
   const date = new Date(dateStr)
@@ -426,6 +199,7 @@ const formatDate = (dateStr: string): string => {
 
 // 组件挂载时获取天气
 onMounted(() => {
+  console.log('WeatherDisplay组件已挂载，开始获取天气数据')
   fetchWeather()
 })
 </script>
@@ -434,7 +208,7 @@ onMounted(() => {
 .weather-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0;
+  padding: 1rem;
 }
 
 /* 加载状态 */
@@ -506,7 +280,6 @@ onMounted(() => {
 .weather-content {
   display: grid;
   gap: 2rem;
-  grid-template-columns: 1fr;
 }
 
 /* 当前天气 */
@@ -520,13 +293,12 @@ onMounted(() => {
 
 .location-info h2 {
   font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0 0 0.25rem 0;
+  margin-bottom: 0.25rem;
 }
 
 .location-info p {
   opacity: 0.8;
-  margin: 0 0 1.5rem 0;
+  margin-bottom: 1.5rem;
 }
 
 .current-temp {
@@ -538,7 +310,6 @@ onMounted(() => {
   display: block;
   font-size: 4rem;
   font-weight: 300;
-  line-height: 1;
   margin-bottom: 0.5rem;
 }
 
@@ -572,31 +343,18 @@ onMounted(() => {
   font-weight: 600;
 }
 
-/* AQI颜色 */
-.aqi-good { color: #10b981; }
-.aqi-moderate { color: #f59e0b; }
-.aqi-unhealthy-sensitive { color: #f97316; }
-.aqi-unhealthy { color: #ef4444; }
-.aqi-very-unhealthy { color: #8b5cf6; }
-.aqi-hazardous { color: #7c2d12; }
-
 /* 预报部分 */
-.forecast-section,
-.indexes-section,
-.alerts-section {
+.forecast-section {
   background: white;
-  padding: 1.5rem;
+  padding: 2rem;
   border-radius: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-.forecast-section h3,
-.indexes-section h3,
-.alerts-section h3 {
-  margin: 0 0 1.5rem 0;
+.forecast-section h3 {
+  margin-bottom: 1.5rem;
   color: #1f2937;
   font-size: 1.25rem;
-  font-weight: 600;
 }
 
 .forecast-list {
@@ -609,13 +367,13 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: #f9fafb;
+  background: #f8fafc;
   border-radius: 0.5rem;
   transition: background-color 0.2s;
 }
 
 .forecast-item:hover {
-  background: #f3f4f6;
+  background: #e2e8f0;
 }
 
 .forecast-date {
@@ -635,14 +393,12 @@ onMounted(() => {
 
 .forecast-weather {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
+  gap: 1rem;
 }
 
 .weather-text {
-  color: #6b7280;
-  font-size: 0.875rem;
-  margin-bottom: 0.25rem;
+  color: #4b5563;
 }
 
 .temp-range {
@@ -652,128 +408,40 @@ onMounted(() => {
 
 .temp-range .high {
   font-weight: 600;
-  color: #1f2937;
+  color: #dc2626;
 }
 
 .temp-range .low {
   color: #6b7280;
 }
 
-/* 生活指数 */
-.indexes-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-}
-
-.index-item {
-  padding: 1rem;
-  background: #f9fafb;
-  border-radius: 0.5rem;
-  border-left: 4px solid #3b82f6;
-}
-
-.index-name {
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.index-brief {
-  color: #3b82f6;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-}
-
-.index-detail {
-  color: #6b7280;
-  font-size: 0.875rem;
-  line-height: 1.4;
-}
-
-/* 预警信息 */
-.alerts-list {
-  display: grid;
-  gap: 1rem;
-}
-
-.alert-item {
-  padding: 1rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 0.5rem;
-  border-left: 4px solid #ef4444;
-}
-
-.alert-header {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.alert-type {
-  background: #ef4444;
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.alert-level {
-  background: #f59e0b;
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.alert-title {
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.alert-desc {
-  color: #6b7280;
-  font-size: 0.875rem;
-  line-height: 1.4;
-}
-
 /* 响应式设计 */
-@media (min-width: 768px) {
-  .weather-content {
-    grid-template-columns: 2fr 1fr;
+@media (max-width: 768px) {
+  .weather-container {
+    padding: 0.5rem;
   }
   
   .current-weather {
-    grid-row: span 2;
-  }
-}
-
-@media (min-width: 1024px) {
-  .weather-content {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
-  
-  .current-weather {
-    grid-column: span 2;
-    grid-row: span 2;
-  }
-}
-
-@media (max-width: 640px) {
-  .weather-details {
-    grid-template-columns: 1fr;
-  }
-  
-  .indexes-grid {
-    grid-template-columns: 1fr;
+    padding: 1.5rem;
   }
   
   .temperature {
     font-size: 3rem;
+  }
+  
+  .weather-details {
+    grid-template-columns: 1fr;
+  }
+  
+  .forecast-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .forecast-weather {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 </style>
