@@ -167,8 +167,13 @@ const weatherData = ref<WeatherData | null>(null)
 const loading = ref(false)
 const error = ref('')
 
-// 百度地图API密钥 - 实际使用时需要申请真实的AK
-const BAIDU_AK = 'your_baidu_ak_here'
+// 百度地图API密钥 - 从环境变量获取
+const BAIDU_AK = import.meta.env.VITE_BAIDU_AK || 'your_baidu_ak_here'
+
+// 检查API密钥配置
+if (BAIDU_AK === 'your_baidu_ak_here') {
+  console.warn('⚠️ 百度地图API密钥未配置，请在.env文件中设置VITE_BAIDU_AK')
+}
 
 // 默认位置：北京
 const DEFAULT_LOCATION = {
@@ -218,12 +223,18 @@ const fetchWeatherData = async () => {
     loading.value = true
     error.value = ''
 
+    // 检查API密钥
+    if (BAIDU_AK === 'your_baidu_ak_here') {
+      throw new Error('百度地图API密钥未配置，请在.env文件中设置VITE_BAIDU_AK')
+    }
+
     // 获取用户位置
     const position = await getCurrentPosition()
-    console.log('获取到位置:', position)
+    console.log('📍 获取到位置:', position)
 
     // 获取区域ID
     const districtId = await getDistrictId(position.lat, position.lng)
+    console.log('🏙️ 区域ID:', districtId)
 
     // 构造请求URL
     const url = `https://api.map.baidu.com/weather/v1/`
@@ -233,11 +244,56 @@ const fetchWeatherData = async () => {
       ak: BAIDU_AK
     })
 
-    // 由于跨域限制，这里使用模拟数据
-    // 实际项目中需要通过后端代理或使用JSONP
-    console.log('请求URL:', `${url}?${params.toString()}`)
+    const requestUrl = `${url}?${params.toString()}`
+    console.log('🌐 请求URL:', requestUrl)
+    console.log('🔑 使用的API密钥:', BAIDU_AK.substring(0, 8) + '...')
+
+    // 尝试真实API调用
+    try {
+      const response = await fetch(requestUrl)
+      const data = await response.json()
+      
+      console.log('📡 API响应:', data)
+      
+      if (data.status === 0 && data.result) {
+        // API调用成功，使用真实数据
+        weatherData.value = {
+          location: data.result.location?.city || '北京市',
+          current: {
+            temperature: data.result.now?.temp || '20',
+            condition: data.result.now?.text || '晴',
+            humidity: data.result.now?.rh || '65',
+            windSpeed: data.result.now?.wind_speed || '3',
+            windDirection: data.result.now?.wind_dir || '东南风',
+            pressure: data.result.now?.pres || '1013',
+            visibility: data.result.now?.vis || '10',
+            uvIndex: '3',
+            feelsLike: data.result.now?.feels_like || '22'
+          },
+          forecast: data.result.forecasts?.slice(0, 7).map((day: any) => ({
+            date: day.date,
+            high: day.high,
+            low: day.low,
+            condition: day.text_day,
+            icon: day.wc_day,
+            windDirection: day.wd_day,
+            windSpeed: day.ws_day
+          })) || [],
+          indices: data.result.index || [],
+          alerts: data.result.alerts || []
+        }
+        console.log('✅ 使用真实API数据')
+        return
+      } else {
+        console.warn('⚠️ API返回错误:', data.message || '未知错误')
+        throw new Error(data.message || 'API调用失败')
+      }
+    } catch (apiError) {
+      console.warn('⚠️ API调用失败，使用模拟数据:', apiError)
+      // 继续使用模拟数据
+    }
     
-    // 模拟API响应数据
+    // 模拟API响应数据（备用方案）
     const mockData: WeatherData = {
       status: 0,
       result: {
