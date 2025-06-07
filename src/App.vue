@@ -35,7 +35,7 @@ const handleNavigation = (item: MenuItem) => {
       <main class="main-content">
         <header class="app-header">
           <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="60" height="60" />
-          <h1>Weather Dashboard</h1>
+          <h1>天气预报</h1>
         </header>
         
         <div class="content-wrapper">
