@@ -256,31 +256,40 @@ const fetchWeatherData = async () => {
       console.log('📡 API响应:', data)
       
       if (data.status === 0 && data.result) {
-        // API调用成功，使用真实数据
+        // API调用成功，使用真实数据，保持与模板期望的数据结构一致
         weatherData.value = {
-          location: data.result.location?.city || '北京市',
-          current: {
-            temperature: data.result.now?.temp || '20',
-            condition: data.result.now?.text || '晴',
-            humidity: data.result.now?.rh || '65',
-            windSpeed: data.result.now?.wind_speed || '3',
-            windDirection: data.result.now?.wind_dir || '东南风',
-            pressure: data.result.now?.pres || '1013',
-            visibility: data.result.now?.vis || '10',
-            uvIndex: '3',
-            feelsLike: data.result.now?.feels_like || '22'
-          },
-          forecast: data.result.forecasts?.slice(0, 7).map((day: any) => ({
-            date: day.date,
-            high: day.high,
-            low: day.low,
-            condition: day.text_day,
-            icon: day.wc_day,
-            windDirection: day.wd_day,
-            windSpeed: day.ws_day
-          })) || [],
-          indices: data.result.index || [],
-          alerts: data.result.alerts || []
+          status: 0,
+          result: {
+            location: {
+              country: data.result.location?.country || '中国',
+              province: data.result.location?.province || '北京市',
+              city: data.result.location?.city || '北京市',
+              name: data.result.location?.name || '东城',
+              id: data.result.location?.id || '110101'
+            },
+            now: {
+              temp: data.result.now?.temp || 20,
+              feels_like: data.result.now?.feels_like || 22,
+              rh: data.result.now?.rh || 65,
+              wind_class: data.result.now?.wind_class || '3级',
+              wind_dir: data.result.now?.wind_dir || '东南风',
+              text: data.result.now?.text || '晴',
+              prec_1h: data.result.now?.prec_1h || 0,
+              clouds: data.result.now?.clouds || 0,
+              vis: data.result.now?.vis || 10,
+              aqi: data.result.now?.aqi || 50,
+              pm25: data.result.now?.pm25 || 35,
+              pm10: data.result.now?.pm10 || 50,
+              no2: data.result.now?.no2 || 20,
+              so2: data.result.now?.so2 || 10,
+              o3: data.result.now?.o3 || 80,
+              co: data.result.now?.co || 1.0,
+              uptime: data.result.now?.uptime || new Date().toISOString().replace(/[-:]/g, '').slice(0, 14)
+            },
+            indexes: data.result.indexes || data.result.index || [],
+            alerts: data.result.alerts || [],
+            forecasts: data.result.forecasts || []
+          }
         }
         console.log('✅ 使用真实API数据')
         return
