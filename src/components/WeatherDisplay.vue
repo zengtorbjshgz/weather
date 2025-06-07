@@ -236,8 +236,8 @@ const fetchWeatherData = async () => {
     const districtId = await getDistrictId(position.lat, position.lng)
     console.log('🏙️ 区域ID:', districtId)
 
-    // 构造请求URL
-    const url = `https://api.map.baidu.com/weather/v1/`
+    // 构造请求URL - 使用本地代理
+    const url = `/api/weather/`
     const params = new URLSearchParams({
       district_id: districtId,
       data_type: 'all',
@@ -245,10 +245,10 @@ const fetchWeatherData = async () => {
     })
 
     const requestUrl = `${url}?${params.toString()}`
-    console.log('🌐 请求URL:', requestUrl)
+    console.log('🌐 代理请求URL:', requestUrl)
     console.log('🔑 使用的API密钥:', BAIDU_AK.substring(0, 8) + '...')
 
-    // 尝试真实API调用
+    // 通过代理调用API
     try {
       const response = await fetch(requestUrl)
       const data = await response.json()
