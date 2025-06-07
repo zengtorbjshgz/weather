@@ -210,10 +210,129 @@ const getCurrentPosition = (): Promise<{ lat: number; lng: number }> => {
   })
 }
 
-// 根据经纬度获取区域ID（简化版本，实际应该调用百度地图逆地理编码API）
+// 根据经纬度获取区域ID（调用百度地图逆地理编码API）
 const getDistrictId = async (lat: number, lng: number): Promise<string> => {
-  // 这里简化处理，实际项目中应该调用百度地图的逆地理编码API
-  // 暂时使用北京东城区的district_id
+  try {
+    // 调用百度地图逆地理编码API获取地址信息
+    const geocodeUrl = `https://api.map.baidu.com/reverse_geocoding/v3/`
+    const params = new URLSearchParams({
+      ak: BAIDU_AK,
+      output: 'json',
+      coordtype: 'wgs84ll',
+      location: `${lat},${lng}`
+    })
+    
+    const response = await fetch(`/api/geocode/?${params.toString()}`)
+    const data = await response.json()
+    
+    console.log('🗺️ 逆地理编码响应:', data)
+    
+    if (data.status === 0 && data.result) {
+      // 从地址组件中提取区域信息
+      const addressComponent = data.result.addressComponent
+      const city = addressComponent.city
+      const district = addressComponent.district
+      
+      console.log('📍 解析到的城市:', city, '区域:', district)
+      
+      // 根据城市和区域信息映射到district_id
+      // 这里可以建立一个城市区域到district_id的映射表
+      const districtId = getDistrictIdByLocation(city, district)
+      console.log('🏙️ 映射的区域ID:', districtId)
+      
+      return districtId
+    } else {
+      console.warn('⚠️ 逆地理编码失败:', data.message)
+      throw new Error('逆地理编码失败')
+    }
+  } catch (error) {
+    console.warn('⚠️ 逆地理编码API调用失败，使用默认区域ID:', error)
+    // 降级使用北京东城区
+    return '110101'
+  }
+}
+
+// 根据城市和区域名称获取district_id的映射函数
+const getDistrictIdByLocation = (city: string, district: string): string => {
+  // 简化的城市区域映射表，实际项目中应该使用完整的映射数据
+  const locationMap: Record<string, Record<string, string>> = {
+    '北京市': {
+      '东城区': '110101',
+      '西城区': '110102',
+      '朝阳区': '110105',
+      '丰台区': '110106',
+      '石景山区': '110107',
+      '海淀区': '110108',
+      '门头沟区': '110109',
+      '房山区': '110111',
+      '通州区': '110112',
+      '顺义区': '110113',
+      '昌平区': '110114',
+      '大兴区': '110115',
+      '怀柔区': '110116',
+      '平谷区': '110117',
+      '密云区': '110118',
+      '延庆区': '110119'
+    },
+    '上海市': {
+      '黄浦区': '310101',
+      '徐汇区': '310104',
+      '长宁区': '310105',
+      '静安区': '310106',
+      '普陀区': '310107',
+      '虹口区': '310109',
+      '杨浦区': '310110',
+      '闵行区': '310112',
+      '宝山区': '310113',
+      '嘉定区': '310114',
+      '浦东新区': '310115',
+      '金山区': '310116',
+      '松江区': '310117',
+      '青浦区': '310118',
+      '奉贤区': '310120',
+      '崇明区': '310151'
+    },
+    '广州市': {
+      '荔湾区': '440103',
+      '越秀区': '440104',
+      '海珠区': '440105',
+      '天河区': '440106',
+      '白云区': '440111',
+      '黄埔区': '440112',
+      '番禺区': '440113',
+      '花都区': '440114',
+      '南沙区': '440115',
+      '从化区': '440117',
+      '增城区': '440118'
+    },
+    '深圳市': {
+      '罗湖区': '440303',
+      '福田区': '440304',
+      '南山区': '440305',
+      '宝安区': '440306',
+      '龙岗区': '440307',
+      '盐田区': '440308',
+      '龙华区': '440309',
+      '坪山区': '440310',
+      '光明区': '440311'
+    }
+  }
+  
+  // 查找对应的district_id
+  const cityMap = locationMap[city]
+  if (cityMap && cityMap[district]) {
+    return cityMap[district]
+  }
+  
+  // 如果没有找到精确匹配，尝试使用城市的第一个区域
+  if (cityMap) {
+    const firstDistrictId = Object.values(cityMap)[0]
+    console.log(`⚠️ 未找到${district}的精确映射，使用${city}的默认区域`)
+    return firstDistrictId
+  }
+  
+  // 如果城市也没有找到，使用北京东城区作为默认值
+  console.log(`⚠️ 未找到${city}的映射，使用北京东城区作为默认值`)
   return '110101'
 }
 

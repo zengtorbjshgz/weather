@@ -35,13 +35,31 @@ export default defineConfig({
         secure: true,
         configure: (proxy, options) => {
           proxy.on('error', (err, req, res) => {
-            console.log('代理错误:', err)
+            console.log('天气API代理错误:', err)
           })
           proxy.on('proxyReq', (proxyReq, req, res) => {
-            console.log('代理请求:', req.method, req.url)
+            console.log('天气API代理请求:', req.method, req.url)
           })
           proxy.on('proxyRes', (proxyRes, req, res) => {
-            console.log('代理响应:', proxyRes.statusCode, req.url)
+            console.log('天气API代理响应:', proxyRes.statusCode, req.url)
+          })
+        }
+      },
+      // 代理百度逆地理编码API请求
+      '/api/geocode': {
+        target: 'https://api.map.baidu.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/geocode/, '/reverse_geocoding/v3'),
+        secure: true,
+        configure: (proxy, options) => {
+          proxy.on('error', (err, req, res) => {
+            console.log('逆地理编码API代理错误:', err)
+          })
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            console.log('逆地理编码API代理请求:', req.method, req.url)
+          })
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            console.log('逆地理编码API代理响应:', proxyRes.statusCode, req.url)
           })
         }
       }
