@@ -114,7 +114,7 @@ describe('SideNavigation', () => {
     expect(wrapper.emitted('itemClick')).toBeTruthy()
     expect(wrapper.emitted('itemClick')).toHaveLength(1)
     
-    const emittedItem = wrapper.emitted('itemClick')![0][0] as any
+    const emittedItem = wrapper.emitted('itemClick')![0][0] as { id: string; label: string }
     expect(emittedItem.id).toBe('my-asset')
     expect(emittedItem.label).toBe('My Asset')
   })
@@ -190,13 +190,13 @@ describe('SideNavigation', () => {
       
       // Test Dashboard
       await menuItems[0].trigger('click')
-      let emittedItem = wrapper.emitted('itemClick')![0][0] as any
+      let emittedItem = wrapper.emitted('itemClick')![0][0] as { id: string; route?: string }
       expect(emittedItem.id).toBe('dashboard')
       expect(emittedItem.route).toBe('/dashboard')
       
       // Test Logout
       await menuItems[7].trigger('click')
-      emittedItem = wrapper.emitted('itemClick')![1][0] as any
+      emittedItem = wrapper.emitted('itemClick')![1][0] as { id: string; route?: string }
       expect(emittedItem.id).toBe('logout')
       expect(emittedItem.route).toBeUndefined() // Logout doesn't have a route
     })

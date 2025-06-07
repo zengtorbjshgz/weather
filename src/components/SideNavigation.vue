@@ -1,59 +1,73 @@
 <template>
-  <div class="side-navigation">
-    <!-- 背景 -->
-    <div class="nav-background"></div>
+  <nav class="md-navigation-drawer md-surface-container md-elevation-1">
+    <div class="nav-header">
+      <div class="nav-header-content">
+        <div class="app-identity">
+          <div class="app-icon md-primary-container md-shape-corner-medium">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.74 2.32a.5.5 0 0 0-.48 0l-10 5A.5.5 0 0 0 2 8v8a.5.5 0 0 0 .26.44l10 5a.5.5 0 0 0 .48 0l10-5A.5.5 0 0 0 23 16V8a.5.5 0 0 0-.26-.44l-10-5zM12 3.2L21.26 8 12 12.8 2.74 8 12 3.2zM3 8.82l9 4.5v8.36l-9-4.5V8.82zm10 12.86v-8.36l9-4.5v8.36l-9 4.5z"/>
+            </svg>
+          </div>
+          <div class="app-info">
+            <h2 class="app-name md-typescale-title-large">天气助手</h2>
+            <p class="app-subtitle md-typescale-label-large">实时天气信息</p>
+          </div>
+        </div>
+      </div>
+    </div>
     
-    <!-- 菜单内容 -->
     <div class="nav-content">
-      <!-- MENU 分组 -->
+      <!-- 主要功能 -->
       <div class="nav-section">
-        <h3 class="section-title">MENU</h3>
-        <div class="menu-items">
+        <h3 class="section-title md-typescale-label-large">主要功能</h3>
+        <div class="nav-items">
           <div 
             v-for="item in menuItems" 
             :key="item.id"
-            class="menu-item"
-            :class="{ active: item.active }"
+            class="nav-item md-shape-corner-large"
+            :class="{ 'nav-item--active': item.active }"
             @click="handleItemClick(item)"
+            role="button"
+            tabindex="0"
           >
-            <div class="item-background"></div>
-            <div v-if="item.active" class="active-indicator"></div>
-            <div class="item-content">
-              <div class="item-icon" :class="{ active: item.active }">
+            <div class="nav-item-content">
+              <div class="nav-item-icon">
                 <component :is="item.icon" />
               </div>
-              <span class="item-text" :class="{ active: item.active }">{{ item.label }}</span>
+              <span class="nav-item-text md-typescale-label-large">{{ item.label }}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- GENERAL 分组 -->
+      <!-- 设置与帮助 -->
       <div class="nav-section">
-        <h3 class="section-title">GENERAL</h3>
-        <div class="menu-items">
+        <h3 class="section-title md-typescale-label-large">设置与帮助</h3>
+        <div class="nav-items">
           <div 
             v-for="item in generalItems" 
             :key="item.id"
-            class="menu-item"
+            class="nav-item md-shape-corner-large"
             @click="handleItemClick(item)"
+            role="button"
+            tabindex="0"
           >
-            <div class="item-background"></div>
-            <div class="item-content">
-              <div class="item-icon">
+            <div class="nav-item-content">
+              <div class="nav-item-icon">
                 <component :is="item.icon" />
               </div>
-              <span class="item-text">{{ item.label }}</span>
+              <span class="nav-item-text md-typescale-label-large">{{ item.label }}</span>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </nav>
 </template>
 
 <script setup lang="ts">
 import { ref, defineEmits } from 'vue'
+import type { DefineComponent } from 'vue'
 import IconHome from '@/assets/icons/icon-home.svg?component'
 import IconWallet from '@/assets/icons/icon-wallet.svg?component'
 import IconChart from '@/assets/icons/icon-chart.svg?component'
@@ -66,7 +80,7 @@ import IconLogout from '@/assets/icons/icon-logout.svg?component'
 interface MenuItem {
   id: string
   label: string
-  icon: any
+  icon: DefineComponent
   active?: boolean
   route?: string
 }
@@ -75,59 +89,60 @@ const emit = defineEmits<{
   itemClick: [item: MenuItem]
 }>()
 
-// MENU 分组项目
+// 主要功能项目
 const menuItems = ref<MenuItem[]>([
   {
-    id: 'dashboard',
-    label: 'Dashboard',
+    id: 'weather',
+    label: '实时天气',
     icon: IconHome,
     active: true,
-    route: '/dashboard'
+    route: '/'
   },
   {
-    id: 'my-asset',
-    label: 'My Asset',
-    icon: IconWallet,
-    route: '/my-asset'
-  },
-  {
-    id: 'analytics',
-    label: 'Analytics',
+    id: 'forecast',
+    label: '天气预报',
     icon: IconChart,
-    route: '/analytics'
+    route: '/forecast'
   },
   {
     id: 'history',
-    label: 'History',
+    label: '历史记录',
     icon: IconTime,
     route: '/history'
   },
   {
-    id: 'news',
-    label: 'News',
+    id: 'locations',
+    label: '我的位置',
+    icon: IconWallet,
+    route: '/locations'
+  },
+  {
+    id: 'alerts',
+    label: '天气预警',
     icon: IconNews,
-    route: '/news'
+    route: '/alerts'
   }
 ])
 
-// GENERAL 分组项目
+// 设置与帮助项目
 const generalItems = ref<MenuItem[]>([
   {
-    id: 'help',
-    label: 'Help',
-    icon: IconInfo,
-    route: '/help'
-  },
-  {
     id: 'settings',
-    label: 'Settings',
+    label: '设置',
     icon: IconSettings,
     route: '/settings'
   },
   {
-    id: 'logout',
-    label: 'Logout',
-    icon: IconLogout
+    id: 'help',
+    label: '帮助',
+    icon: IconInfo,
+    route: '/help'
+  },
+  {
+    id: 'about',
+    label: '关于',
+    icon: IconLogout,
+    route: '/about'
   }
 ])
 
@@ -145,153 +160,302 @@ const handleItemClick = (item: MenuItem) => {
 </script>
 
 <style scoped>
-.side-navigation {
+/* Material Design 3 Navigation Drawer */
+.md-navigation-drawer {
   position: relative;
-  width: 256px;
-  height: 636px;
-}
-
-.nav-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #ffffff;
-  box-shadow: 24px 0px 80px 0px rgba(49, 79, 124, 0.02);
-}
-
-.nav-content {
-  position: relative;
-  padding: 32px 16px;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-.nav-section {
-  margin-bottom: 32px;
-}
-
-.section-title {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 1.714;
-  color: #8F98B7;
-  margin: 0 0 16px 16px;
-  text-transform: uppercase;
-}
-
-.menu-items {
+  width: 360px;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  border-right: 1px solid var(--md-sys-color-outline-variant);
+  overflow: hidden;
 }
 
-.menu-item {
-  position: relative;
-  width: 224px;
-  height: 56px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+/* Navigation Header */
+.nav-header {
+  padding: 24px 16px 16px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
-.menu-item:hover .item-background {
-  background: rgba(244, 246, 248, 0.9);
-}
-
-.item-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(244, 246, 248, 0.73);
-  border-radius: 8px;
-  transition: background 0.2s ease;
-}
-
-.active-indicator {
-  position: absolute;
-  right: 0;
-  top: 13px;
-  width: 14.5px;
-  height: 29px;
-  background: linear-gradient(135deg, #1CAC70 0%, #EDDC46 100%);
-  border-radius: 4px 0 0 4px;
-}
-
-.item-content {
-  position: relative;
+.nav-header-content {
   display: flex;
   align-items: center;
-  padding: 16px;
-  height: 100%;
-  box-sizing: border-box;
 }
 
-.item-icon {
-  width: 24px;
-  height: 24px;
-  margin-right: 12px;
-  border-radius: 8px;
+.app-identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.app-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
+  width: 56px;
+  height: 56px;
+  color: var(--md-sys-color-on-primary-container);
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
-.item-icon.active {
-  background: linear-gradient(135deg, #1CAC70 0%, #EDDC46 100%);
-  border: none;
+.app-icon:hover {
+  transform: scale(1.05);
 }
 
-.item-icon:not(.active) {
-  border-color: #E5E7EB;
+.app-info {
+  flex: 1;
+  min-width: 0;
 }
 
-.item-icon svg {
-  width: 16px;
-  height: 16px;
+.app-name {
+  margin: 0 0 4px 0;
+  color: var(--md-sys-color-on-surface);
+  font-weight: 400;
 }
 
-.item-icon.active svg {
-  filter: brightness(0) invert(1);
+.app-subtitle {
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: 400;
 }
 
-.item-icon:not(.active) svg {
-  filter: brightness(0) saturate(100%) invert(45%) sepia(8%) saturate(1238%) hue-rotate(202deg) brightness(95%) contrast(87%);
+/* Navigation Content */
+.nav-content {
+  flex: 1;
+  padding: 12px 12px 24px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--md-sys-color-outline-variant) transparent;
 }
 
-.item-text {
-  font-family: 'Poppins', sans-serif;
+.nav-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.nav-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nav-content::-webkit-scrollbar-thumb {
+  background-color: var(--md-sys-color-outline-variant);
+  border-radius: 4px;
+}
+
+.nav-section {
+  margin-bottom: 24px;
+}
+
+.nav-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  margin: 0 0 8px 16px;
+  color: var(--md-sys-color-on-surface-variant);
   font-weight: 500;
-  font-size: 16px;
-  line-height: 1.5;
-  color: #6B7280;
-  transition: color 0.2s ease;
+  text-transform: none;
+  letter-spacing: 0.1px;
 }
 
-.item-text.active {
-  color: #1F2937;
-  font-weight: 600;
+/* Navigation Items */
+.nav-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 0;
+  margin: 0 4px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  outline: none;
+}
+
+.nav-item:hover {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.nav-item:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+.nav-item--active {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.nav-item--active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 32px;
+  background-color: var(--md-sys-color-primary);
+  border-radius: 0 2px 2px 0;
+}
+
+.nav-item-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 16px;
+  gap: 12px;
+}
+
+.nav-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--md-sys-color-on-surface-variant);
+  transition: color 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.nav-item:hover .nav-item-icon,
+.nav-item--active .nav-item-icon {
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.nav-item-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.nav-item-text {
+  flex: 1;
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: 500;
+  transition: color 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-item:hover .nav-item-text,
+.nav-item--active .nav-item-text {
+  color: var(--md-sys-color-on-secondary-container);
 }
 
 /* 响应式设计 */
-@media (max-width: 768px) {
-  .side-navigation {
-    width: 100%;
-    height: auto;
+@media (max-width: 840px) {
+  .md-navigation-drawer {
+    width: 320px;
+  }
+  
+  .nav-header {
+    padding: 16px 12px 12px;
+  }
+  
+  .app-identity {
+    gap: 12px;
+  }
+  
+  .app-icon {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .app-name {
+    font-size: 20px;
+    line-height: 28px;
+  }
+  
+  .app-subtitle {
+    font-size: 12px;
+    line-height: 16px;
   }
   
   .nav-content {
-    padding: 16px;
+    padding: 8px 8px 16px;
   }
   
-  .menu-item {
-    width: 100%;
+  .nav-item {
+    min-height: 48px;
+    margin: 0 2px;
+  }
+  
+  .nav-item-content {
+    padding: 12px;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .md-navigation-drawer {
+    width: 280px;
+  }
+  
+  .nav-header {
+    padding: 12px 8px 8px;
+  }
+  
+  .app-identity {
+    gap: 8px;
+  }
+  
+  .app-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .app-name {
+    font-size: 18px;
+    line-height: 24px;
+  }
+  
+  .app-subtitle {
+    font-size: 11px;
+    line-height: 14px;
+  }
+  
+  .nav-content {
+    padding: 6px 6px 12px;
+  }
+  
+  .section-title {
+    margin: 0 0 6px 12px;
+    font-size: 12px;
+    line-height: 16px;
+  }
+  
+  .nav-item {
+    min-height: 44px;
+    margin: 0 1px;
+  }
+  
+  .nav-item-content {
+    padding: 10px;
+    gap: 8px;
+  }
+  
+  .nav-item-text {
+    font-size: 13px;
+    line-height: 18px;
+  }
+}
+
+/* 深色主题适配 */
+@media (prefers-color-scheme: dark) {
+  .md-navigation-drawer {
+    border-right-color: var(--md-sys-color-outline-variant);
+  }
+  
+  .nav-header {
+    border-bottom-color: var(--md-sys-color-outline-variant);
   }
 }
 </style>

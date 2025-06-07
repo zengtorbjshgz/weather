@@ -33,14 +33,14 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/weather/, '/weather/v1'),
         secure: true,
-        configure: (proxy, options) => {
-          proxy.on('error', (err, req, res) => {
+        configure: (proxy) => {
+          proxy.on('error', (err) => {
             console.log('天气API代理错误:', err)
           })
-          proxy.on('proxyReq', (proxyReq, req, res) => {
+          proxy.on('proxyReq', (proxyReq, req) => {
             console.log('天气API代理请求:', req.method, req.url)
           })
-          proxy.on('proxyRes', (proxyRes, req, res) => {
+          proxy.on('proxyRes', (proxyRes, req) => {
             console.log('天气API代理响应:', proxyRes.statusCode, req.url)
           })
         }
@@ -51,14 +51,14 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/geocode/, '/reverse_geocoding/v3'),
         secure: true,
-        configure: (proxy, options) => {
-          proxy.on('error', (err, req, res) => {
+        configure: (proxy) => {
+          proxy.on('error', (err) => {
             console.log('逆地理编码API代理错误:', err)
           })
-          proxy.on('proxyReq', (proxyReq, req, res) => {
+          proxy.on('proxyReq', (proxyReq, req) => {
             console.log('逆地理编码API代理请求:', req.method, req.url)
           })
-          proxy.on('proxyRes', (proxyRes, req, res) => {
+          proxy.on('proxyRes', (proxyRes, req) => {
             console.log('逆地理编码API代理响应:', proxyRes.statusCode, req.url)
           })
         }

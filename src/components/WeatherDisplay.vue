@@ -1,93 +1,150 @@
 <template>
-  <div class="weather-container">
-    <div class="weather-header">
-      <h2>天气信息</h2>
-      <button @click="refreshWeather" :disabled="loading" class="refresh-btn">
-        <span v-if="loading">刷新中...</span>
-        <span v-else>刷新</span>
-      </button>
+  <div class="md-weather-container md-surface md-shape-corner-large">
+    <!-- 页面标题栏 -->
+    <div class="md-weather-header md-surface-container md-shape-corner-medium md-elevation-1">
+      <div class="header-content">
+        <h1 class="md-typescale-headline-medium">天气信息</h1>
+        <button 
+          @click="refreshWeather" 
+          :disabled="loading" 
+          class="md-fab md-fab--small md-primary-container"
+          :class="{ 'md-fab--loading': loading }"
+        >
+          <svg v-if="!loading" class="fab-icon" viewBox="0 0 24 24" fill="none">
+            <path d="M4 12a8 8 0 0 1 8-8V2.5a.5.5 0 0 1 .8-.4l3 2.25a.5.5 0 0 1 0 .8L12.8 7.4a.5.5 0 0 1-.8-.4V5a6 6 0 1 0 6 6h1.5a.5.5 0 0 1 .4.8l-2.25 3a.5.5 0 0 1-.8 0l-2.25-3a.5.5 0 0 1 .4-.8H16a8 8 0 0 1-8 8z" fill="currentColor"/>
+          </svg>
+          <div v-else class="loading-spinner"></div>
+        </button>
+      </div>
     </div>
 
-    <div v-if="loading" class="loading">
-      <div class="spinner"></div>
-      <p>正在获取天气信息...</p>
+    <!-- 加载状态 -->
+    <div v-if="loading" class="md-loading-state md-surface-container md-shape-corner-medium md-elevation-1">
+      <div class="loading-content">
+        <div class="md-circular-progress">
+          <svg class="circular-progress-svg" viewBox="0 0 48 48">
+            <circle class="circular-progress-track" cx="24" cy="24" r="18" fill="none" stroke-width="4"/>
+            <circle class="circular-progress-indicator" cx="24" cy="24" r="18" fill="none" stroke-width="4"/>
+          </svg>
+        </div>
+        <p class="md-typescale-body-large loading-text">正在获取天气信息...</p>
+      </div>
     </div>
 
-    <div v-else-if="error" class="error">
-      <p>{{ error }}</p>
-      <button @click="refreshWeather" class="retry-btn">重试</button>
+    <!-- 错误状态 -->
+    <div v-else-if="error" class="md-error-state md-error-container md-shape-corner-medium md-elevation-1">
+      <div class="error-content">
+        <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
+        </svg>
+        <p class="md-typescale-body-large error-message">{{ error }}</p>
+        <button @click="refreshWeather" class="md-button md-button--filled md-error">
+          <span class="md-typescale-label-large">重试</span>
+        </button>
+      </div>
     </div>
 
-    <div v-else-if="weatherData" class="weather-content">
+    <!-- 天气内容 -->
+    <div v-else-if="weatherData" class="md-weather-content">
       <!-- 当前位置信息 -->
-      <div class="location-info">
-        <h3>{{ weatherData.result.location.city }} - {{ weatherData.result.location.name }}</h3>
-        <p class="location-detail">{{ weatherData.result.location.province }}, {{ weatherData.result.location.country }}</p>
-      </div>
-
-      <!-- 当前天气 -->
-      <div class="current-weather">
-        <div class="current-temp">
-          <span class="temp">{{ weatherData.result.now.temp }}°C</span>
-          <span class="feels-like">体感 {{ weatherData.result.now.feels_like }}°C</span>
-        </div>
-        <div class="weather-desc">
-          <p class="text">{{ weatherData.result.now.text }}</p>
-          <p class="wind">{{ weatherData.result.now.wind_dir }} {{ weatherData.result.now.wind_class }}</p>
-          <p class="humidity">湿度 {{ weatherData.result.now.rh }}%</p>
-        </div>
-      </div>
-
-      <!-- 空气质量 -->
-      <div class="air-quality">
-        <h4>空气质量</h4>
-        <div class="aqi-info">
-          <span class="aqi-value" :class="getAQILevel(weatherData.result.now.aqi)">AQI {{ weatherData.result.now.aqi }}</span>
-          <div class="pollutants">
-            <span>PM2.5: {{ weatherData.result.now.pm25 }}</span>
-            <span>PM10: {{ weatherData.result.now.pm10 }}</span>
+      <div class="md-location-card md-surface-container md-shape-corner-medium md-elevation-1">
+        <div class="location-header">
+          <svg class="location-icon" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/>
+          </svg>
+          <div class="location-info">
+            <h2 class="md-typescale-title-large location-title">{{ weatherData.result.location.city }} - {{ weatherData.result.location.name }}</h2>
+            <p class="md-typescale-body-medium location-detail">{{ weatherData.result.location.province }}, {{ weatherData.result.location.country }}</p>
           </div>
         </div>
       </div>
 
-      <!-- 生活指数 -->
-      <div class="life-indexes" v-if="weatherData.result.indexes">
-        <h4>生活指数</h4>
+      <!-- 当前天气主卡片 -->
+      <div class="md-current-weather-card md-primary-container md-shape-corner-large md-elevation-2">
+        <div class="current-weather-content">
+          <div class="temperature-section">
+            <span class="md-typescale-display-large current-temp">{{ weatherData.result.now.temp }}°</span>
+            <span class="md-typescale-body-medium feels-like">体感 {{ weatherData.result.now.feels_like }}°C</span>
+          </div>
+          <div class="weather-details">
+            <h3 class="md-typescale-headline-small weather-condition">{{ weatherData.result.now.text }}</h3>
+            <div class="weather-metrics">
+              <div class="metric-item">
+                <svg class="metric-icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M7.5 12c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5zm4.5 0c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5z" fill="currentColor"/>
+                </svg>
+                <span class="md-typescale-body-medium">{{ weatherData.result.now.wind_dir }} {{ weatherData.result.now.wind_class }}</span>
+              </div>
+              <div class="metric-item">
+                <svg class="metric-icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
+                </svg>
+                <span class="md-typescale-body-medium">湿度 {{ weatherData.result.now.rh }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 空气质量卡片 -->
+      <div class="md-air-quality-card md-surface-container md-shape-corner-medium md-elevation-1">
+        <h3 class="md-typescale-title-medium card-title">空气质量</h3>
+        <div class="aqi-content">
+          <div class="aqi-badge" :class="getAQILevel(weatherData.result.now.aqi)">
+            <span class="md-typescale-label-large aqi-label">AQI</span>
+            <span class="md-typescale-headline-small aqi-value">{{ weatherData.result.now.aqi }}</span>
+          </div>
+          <div class="pollutant-metrics">
+            <div class="pollutant-item">
+              <span class="md-typescale-label-medium pollutant-label">PM2.5</span>
+              <span class="md-typescale-body-large pollutant-value">{{ weatherData.result.now.pm25 }}</span>
+            </div>
+            <div class="pollutant-item">
+              <span class="md-typescale-label-medium pollutant-label">PM10</span>
+              <span class="md-typescale-body-large pollutant-value">{{ weatherData.result.now.pm10 }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 生活指数卡片 -->
+      <div class="md-life-indexes-card md-surface-container md-shape-corner-medium md-elevation-1" v-if="weatherData.result.indexes">
+        <h3 class="md-typescale-title-medium card-title">生活指数</h3>
         <div class="indexes-grid">
-          <div v-for="index in weatherData.result.indexes" :key="index.name" class="index-item">
-            <span class="index-name">{{ index.name }}</span>
-            <span class="index-brief">{{ index.brief }}</span>
+          <div v-for="index in weatherData.result.indexes" :key="index.name" class="md-index-item md-surface-container-highest md-shape-corner-small">
+            <span class="md-typescale-label-medium index-name">{{ index.name }}</span>
+            <span class="md-typescale-body-medium index-brief">{{ index.brief }}</span>
           </div>
         </div>
       </div>
 
-      <!-- 未来天气预报 -->
-      <div class="forecast" v-if="weatherData.result.forecasts">
-        <h4>未来天气</h4>
+      <!-- 天气预报卡片 -->
+      <div class="md-forecast-card md-surface-container md-shape-corner-medium md-elevation-1" v-if="weatherData.result.forecasts">
+        <h3 class="md-typescale-title-medium card-title">未来天气</h3>
         <div class="forecast-list">
-          <div v-for="forecast in weatherData.result.forecasts.slice(0, 5)" :key="forecast.date" class="forecast-item">
+          <div v-for="forecast in weatherData.result.forecasts.slice(0, 5)" :key="forecast.date" class="md-forecast-item md-surface-container-highest md-shape-corner-small">
             <div class="forecast-date">
-              <span class="date">{{ formatDate(forecast.date) }}</span>
-              <span class="week">{{ forecast.week }}</span>
+              <span class="md-typescale-label-large date">{{ formatDate(forecast.date) }}</span>
+              <span class="md-typescale-label-medium week">{{ forecast.week }}</span>
             </div>
             <div class="forecast-weather">
-              <span class="day-text">{{ forecast.text_day }}</span>
-              <span class="temp-range">{{ forecast.low }}° ~ {{ forecast.high }}°</span>
+              <span class="md-typescale-body-medium day-text">{{ forecast.text_day }}</span>
+              <span class="md-typescale-title-small temp-range">{{ forecast.low }}° ~ {{ forecast.high }}°</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 天气预警 -->
-      <div class="alerts" v-if="weatherData.result.alerts && weatherData.result.alerts.length > 0">
-        <h4>天气预警</h4>
-        <div v-for="alert in weatherData.result.alerts" :key="alert.title" class="alert-item">
+      <!-- 天气预警卡片 -->
+      <div class="md-alerts-card md-error-container md-shape-corner-medium md-elevation-1" v-if="weatherData.result.alerts && weatherData.result.alerts.length > 0">
+        <h3 class="md-typescale-title-medium card-title">天气预警</h3>
+        <div v-for="alert in weatherData.result.alerts" :key="alert.title" class="md-alert-item md-surface-container-highest md-shape-corner-small">
           <div class="alert-header">
-            <span class="alert-type">{{ alert.type }}</span>
-            <span class="alert-level">{{ alert.level }}</span>
+            <span class="md-alert-type md-typescale-label-small">{{ alert.type }}</span>
+            <span class="md-alert-level md-typescale-label-small">{{ alert.level }}</span>
           </div>
-          <p class="alert-title">{{ alert.title }}</p>
-          <p class="alert-desc">{{ alert.desc }}</p>
+          <h4 class="md-typescale-title-small alert-title">{{ alert.title }}</h4>
+          <p class="md-typescale-body-medium alert-desc">{{ alert.desc }}</p>
         </div>
       </div>
     </div>
@@ -214,7 +271,6 @@ const getCurrentPosition = (): Promise<{ lat: number; lng: number }> => {
 const getDistrictId = async (lat: number, lng: number): Promise<string> => {
   try {
     // 调用百度地图逆地理编码API获取地址信息
-    const geocodeUrl = `https://api.map.baidu.com/reverse_geocoding/v3/`
     const params = new URLSearchParams({
       ak: BAIDU_AK,
       output: 'json',
@@ -602,240 +658,434 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.weather-container {
-  max-width: 800px;
+/* Material Design 3 Weather Display */
+.md-weather-container {
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.weather-header {
+/* 页面标题栏 */
+.md-weather-header {
+  padding: 20px 24px;
+  margin-bottom: 8px;
+}
+
+.header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #e5e7eb;
 }
 
-.weather-header h2 {
+.header-content h1 {
   margin: 0;
-  color: #1f2937;
-  font-size: 1.5rem;
-  font-weight: 600;
+  color: var(--md-sys-color-on-surface);
 }
 
-.refresh-btn {
-  padding: 8px 16px;
-  background: #3b82f6;
-  color: white;
+/* Material Design 3 FAB */
+.md-fab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
-  border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  outline: none;
+  overflow: hidden;
 }
 
-.refresh-btn:hover:not(:disabled) {
-  background: #2563eb;
+.md-fab--small {
+  width: 56px;
+  height: 56px;
+  color: var(--md-sys-color-on-primary-container);
 }
 
-.refresh-btn:disabled {
-  background: #9ca3af;
+.md-fab:hover {
+  transform: scale(1.05);
+}
+
+.md-fab:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+.md-fab:disabled {
+  opacity: 0.38;
   cursor: not-allowed;
+  transform: none;
 }
 
-.loading {
-  text-align: center;
-  padding: 40px 20px;
+.fab-icon {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
 }
 
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f4f6;
-  border-top: 4px solid #3b82f6;
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 16px;
+  animation: md-spin 1s linear infinite;
 }
 
-@keyframes spin {
+@keyframes md-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-.error {
+/* 加载状态 */
+.md-loading-state {
+  padding: 48px 24px;
   text-align: center;
-  padding: 40px 20px;
-  color: #dc2626;
 }
 
-.retry-btn {
-  margin-top: 16px;
-  padding: 8px 16px;
-  background: #dc2626;
-  color: white;
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.md-circular-progress {
+  width: 48px;
+  height: 48px;
+  position: relative;
+}
+
+.circular-progress-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.circular-progress-track {
+  stroke: var(--md-sys-color-outline-variant);
+  opacity: 0.24;
+}
+
+.circular-progress-indicator {
+  stroke: var(--md-sys-color-primary);
+  stroke-linecap: round;
+  stroke-dasharray: 113;
+  stroke-dashoffset: 56.5;
+  animation: md-circular-progress 1.4s ease-in-out infinite;
+}
+
+@keyframes md-circular-progress {
+  0% {
+    stroke-dasharray: 1, 113;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 85, 113;
+    stroke-dashoffset: -25;
+  }
+  100% {
+    stroke-dasharray: 85, 113;
+    stroke-dashoffset: -110;
+  }
+}
+
+.loading-text {
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* 错误状态 */
+.md-error-state {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.error-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.error-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--md-sys-color-error);
+}
+
+.error-message {
+  margin: 0;
+  color: var(--md-sys-color-on-error-container);
+}
+
+/* Material Design 3 Button */
+.md-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 10px 24px;
   border: none;
-  border-radius: 6px;
   cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  outline: none;
+  text-decoration: none;
+  overflow: hidden;
 }
 
-.retry-btn:hover {
-  background: #b91c1c;
+.md-button--filled {
+  background-color: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
+}
+
+.md-button--filled:hover {
+  background-color: var(--md-sys-color-error);
+  filter: brightness(1.08);
+}
+
+.md-button--filled:focus-visible {
+  outline: 2px solid var(--md-sys-color-error);
+  outline-offset: 2px;
+}
+
+/* 天气内容容器 */
+.md-weather-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 位置信息卡片 */
+.md-location-card {
+  padding: 20px 24px;
+}
+
+.location-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.location-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--md-sys-color-primary);
+  flex-shrink: 0;
 }
 
 .location-info {
-  margin-bottom: 24px;
+  flex: 1;
+  min-width: 0;
 }
 
-.location-info h3 {
+.location-title {
   margin: 0 0 4px 0;
-  color: #1f2937;
-  font-size: 1.25rem;
-  font-weight: 600;
+  color: var(--md-sys-color-on-surface);
 }
 
 .location-detail {
   margin: 0;
-  color: #6b7280;
-  font-size: 14px;
+  color: var(--md-sys-color-on-surface-variant);
 }
 
-.current-weather {
+/* 当前天气主卡片 */
+.md-current-weather-card {
+  padding: 32px 24px;
+  margin-bottom: 8px;
+}
+
+.current-weather-content {
   display: flex;
   align-items: center;
   gap: 32px;
-  margin-bottom: 32px;
-  padding: 24px;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  border-radius: 12px;
-  color: white;
 }
 
-.current-temp {
+.temperature-section {
   display: flex;
   flex-direction: column;
   align-items: center;
+  flex-shrink: 0;
 }
 
-.temp {
-  font-size: 3rem;
-  font-weight: 700;
+.current-temp {
+  color: var(--md-sys-color-on-primary-container);
+  font-weight: 400;
   line-height: 1;
+  margin-bottom: 8px;
 }
 
 .feels-like {
-  font-size: 14px;
-  opacity: 0.9;
-  margin-top: 4px;
+  color: var(--md-sys-color-on-primary-container);
+  opacity: 0.87;
 }
 
-.weather-desc {
+.weather-details {
   flex: 1;
+  min-width: 0;
 }
 
-.weather-desc p {
-  margin: 0 0 8px 0;
-  font-size: 16px;
-}
-
-.weather-desc .text {
-  font-size: 18px;
-  font-weight: 500;
-  margin-bottom: 12px;
-}
-
-.air-quality {
-  margin-bottom: 32px;
-  padding: 20px;
-  background: #f9fafb;
-  border-radius: 8px;
-}
-
-.air-quality h4 {
+.weather-condition {
   margin: 0 0 16px 0;
-  color: #1f2937;
-  font-size: 1.1rem;
-  font-weight: 600;
+  color: var(--md-sys-color-on-primary-container);
+  font-weight: 400;
 }
 
-.aqi-info {
+.weather-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.metric-item {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
+}
+
+.metric-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--md-sys-color-on-primary-container);
+  opacity: 0.87;
+  flex-shrink: 0;
+}
+
+.metric-item span {
+  color: var(--md-sys-color-on-primary-container);
+  opacity: 0.87;
+}
+
+/* 卡片通用样式 */
+.card-title {
+  margin: 0 0 20px 0;
+  color: var(--md-sys-color-on-surface);
+  font-weight: 400;
+}
+
+/* 空气质量卡片 */
+.md-air-quality-card {
+  padding: 24px;
+}
+
+.aqi-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.aqi-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 20px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  min-width: 80px;
+}
+
+.aqi-label {
+  opacity: 0.87;
+  margin-bottom: 4px;
 }
 
 .aqi-value {
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 400;
 }
 
-.aqi-good { background: #10b981; color: white; }
-.aqi-moderate { background: #f59e0b; color: white; }
-.aqi-unhealthy-sensitive { background: #ef4444; color: white; }
-.aqi-unhealthy { background: #dc2626; color: white; }
-.aqi-very-unhealthy { background: #7c2d12; color: white; }
-.aqi-hazardous { background: #450a0a; color: white; }
+/* AQI 等级颜色 */
+.aqi-good {
+  background-color: #4CAF50;
+  color: white;
+}
 
-.pollutants {
+.aqi-moderate {
+  background-color: #FF9800;
+  color: white;
+}
+
+.aqi-unhealthy-sensitive {
+  background-color: #FF5722;
+  color: white;
+}
+
+.aqi-unhealthy {
+  background-color: #F44336;
+  color: white;
+}
+
+.aqi-very-unhealthy {
+  background-color: #9C27B0;
+  color: white;
+}
+
+.aqi-hazardous {
+  background-color: #795548;
+  color: white;
+}
+
+.pollutant-metrics {
   display: flex;
-  gap: 16px;
-  font-size: 14px;
-  color: #6b7280;
+  gap: 24px;
+  flex-wrap: wrap;
 }
 
-.life-indexes {
-  margin-bottom: 32px;
+.pollutant-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
-.life-indexes h4 {
-  margin: 0 0 16px 0;
-  color: #1f2937;
-  font-size: 1.1rem;
-  font-weight: 600;
+.pollutant-label {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.pollutant-value {
+  color: var(--md-sys-color-on-surface);
+  font-weight: 500;
+}
+
+/* 生活指数卡片 */
+.md-life-indexes-card {
+  padding: 24px;
 }
 
 .indexes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 12px;
 }
 
-.index-item {
+.md-index-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  padding: 16px 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.md-index-item:hover {
+  background-color: var(--md-sys-color-surface-container-high);
 }
 
 .index-name {
-  font-size: 14px;
-  color: #6b7280;
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 .index-brief {
-  font-size: 14px;
+  color: var(--md-sys-color-on-surface);
   font-weight: 500;
-  color: #1f2937;
+  text-align: right;
 }
 
-.forecast {
-  margin-bottom: 32px;
-}
-
-.forecast h4 {
-  margin: 0 0 16px 0;
-  color: #1f2937;
-  font-size: 1.1rem;
-  font-weight: 600;
+/* 天气预报卡片 */
+.md-forecast-card {
+  padding: 24px;
 }
 
 .forecast-list {
@@ -843,125 +1093,146 @@ onMounted(() => {
   gap: 12px;
   overflow-x: auto;
   padding-bottom: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--md-sys-color-outline-variant) transparent;
 }
 
-.forecast-item {
+.forecast-list::-webkit-scrollbar {
+  height: 8px;
+}
+
+.forecast-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.forecast-list::-webkit-scrollbar-thumb {
+  background-color: var(--md-sys-color-outline-variant);
+  border-radius: 4px;
+}
+
+.md-forecast-item {
   flex: 0 0 auto;
   min-width: 140px;
-  padding: 16px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  padding: 20px 16px;
   text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.md-forecast-item:hover {
+  background-color: var(--md-sys-color-surface-container-high);
+  transform: translateY(-2px);
 }
 
 .forecast-date {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-.forecast-date .date {
+.date {
   display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #1f2937;
-}
-
-.forecast-date .week {
-  display: block;
-  font-size: 12px;
-  color: #6b7280;
-  margin-top: 2px;
-}
-
-.forecast-weather .day-text {
-  display: block;
-  font-size: 14px;
-  color: #1f2937;
+  color: var(--md-sys-color-on-surface);
   margin-bottom: 4px;
 }
 
-.forecast-weather .temp-range {
+.week {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: #3b82f6;
+  color: var(--md-sys-color-on-surface-variant);
 }
 
-.alerts {
-  margin-bottom: 20px;
+.forecast-weather {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.alerts h4 {
-  margin: 0 0 16px 0;
-  color: #1f2937;
-  font-size: 1.1rem;
-  font-weight: 600;
+.day-text {
+  color: var(--md-sys-color-on-surface-variant);
 }
 
-.alert-item {
-  padding: 16px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  margin-bottom: 12px;
+.temp-range {
+  color: var(--md-sys-color-primary);
+  font-weight: 500;
+}
+
+/* 天气预警卡片 */
+.md-alerts-card {
+  padding: 24px;
+}
+
+.md-alert-item {
+  padding: 20px;
+  margin-bottom: 16px;
+  border-left: 4px solid var(--md-sys-color-error);
+}
+
+.md-alert-item:last-child {
+  margin-bottom: 0;
 }
 
 .alert-header {
   display: flex;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
-.alert-type {
-  padding: 4px 8px;
-  background: #dc2626;
-  color: white;
-  border-radius: 4px;
-  font-size: 12px;
+.md-alert-type {
+  padding: 6px 12px;
+  background-color: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
+  border-radius: var(--md-sys-shape-corner-small);
   font-weight: 500;
+  text-transform: uppercase;
 }
 
-.alert-level {
-  padding: 4px 8px;
-  background: #f59e0b;
-  color: white;
-  border-radius: 4px;
-  font-size: 12px;
+.md-alert-level {
+  padding: 6px 12px;
+  background-color: var(--md-sys-color-tertiary);
+  color: var(--md-sys-color-on-tertiary);
+  border-radius: var(--md-sys-shape-corner-small);
   font-weight: 500;
+  text-transform: uppercase;
 }
 
 .alert-title {
-  margin: 0 0 8px 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1f2937;
+  margin: 0 0 12px 0;
+  color: var(--md-sys-color-on-surface);
+  font-weight: 500;
 }
 
 .alert-desc {
   margin: 0;
-  font-size: 14px;
-  color: #6b7280;
-  line-height: 1.5;
+  color: var(--md-sys-color-on-surface-variant);
+  line-height: 1.6;
 }
 
 /* 响应式设计 */
-@media (max-width: 768px) {
-  .weather-container {
-    margin: 0;
+@media (max-width: 840px) {
+  .md-weather-container {
     padding: 16px;
-    border-radius: 0;
+    gap: 20px;
   }
   
-  .current-weather {
+  .md-weather-header {
+    padding: 16px 20px;
+  }
+  
+  .current-weather-content {
     flex-direction: column;
-    gap: 16px;
+    gap: 24px;
     text-align: center;
   }
   
-  .aqi-info {
+  .weather-metrics {
+    align-items: center;
+  }
+  
+  .aqi-content {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .pollutant-metrics {
+    justify-content: center;
   }
   
   .indexes-grid {
@@ -972,9 +1243,90 @@ onMounted(() => {
     gap: 8px;
   }
   
-  .forecast-item {
+  .md-forecast-item {
     min-width: 120px;
+    padding: 16px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .md-weather-container {
     padding: 12px;
+    gap: 16px;
+  }
+  
+  .md-weather-header {
+    padding: 12px 16px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .md-fab--small {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .fab-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .md-current-weather-card {
+    padding: 24px 20px;
+  }
+  
+  .current-temp {
+    font-size: 3.5rem;
+  }
+  
+  .location-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .card-title {
+    font-size: 1.1rem;
+  }
+  
+  .md-forecast-item {
+    min-width: 100px;
+    padding: 12px 8px;
+  }
+  
+  .pollutant-metrics {
+    gap: 16px;
+  }
+}
+
+/* 深色主题适配 */
+@media (prefers-color-scheme: dark) {
+  .aqi-good {
+    background-color: #2E7D32;
+  }
+  
+  .aqi-moderate {
+    background-color: #F57C00;
+  }
+  
+  .aqi-unhealthy-sensitive {
+    background-color: #D84315;
+  }
+  
+  .aqi-unhealthy {
+    background-color: #C62828;
+  }
+  
+  .aqi-very-unhealthy {
+    background-color: #6A1B9A;
+  }
+  
+  .aqi-hazardous {
+    background-color: #4E342E;
   }
 }
 </style>
